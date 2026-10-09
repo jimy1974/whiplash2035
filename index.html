@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A fictional news chronicle of Britain from 2027 to 2035 as AI agents and humanoid robots take over the economy.">
+<title>The Great Whiplash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+/* Layout: a scrolling chronicle on the left, a sticky instrument panel on the right that tracks the year you are reading. On phones the panel pins to the top. */
+:root {
+  --bg: #EBEFF2;
+  --surface: #F7F9FA;
+  --ink: #111A22;
+  --muted: #55626E;
+  --rule: #C7D0D7;
+  --accent: #C93D0C;
+  --s-rev: #C93D0C;
+  --s-compute: #1F5FCC;
+  --s-agents: #7440D6;
+  --s-robots: #0A7B6F;
+  --s-val: #B0225F;
+  --s-model: #6A7580;
+  --f-display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Newsreader", Georgia, "Times New Roman", serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1318; --surface: #151D24; --ink: #E3E8EC; --muted: #93A0AB; --rule: #2A3540;
+    --accent: #FF7A45; --s-rev: #FF7A45; --s-compute: #6E9FFF; --s-agents: #B18DFF;
+    --s-robots: #3CC5B3; --s-val: #F06AA6; --s-model: #9AA6B1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1318; --surface: #151D24; --ink: #E3E8EC; --muted: #93A0AB; --rule: #2A3540;
+  --accent: #FF7A45; --s-rev: #FF7A45; --s-compute: #6E9FFF; --s-agents: #B18DFF;
+  --s-robots: #3CC5B3; --s-val: #F06AA6; --s-model: #9AA6B1; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 18px; line-height: 1.6; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+  grid-template-areas: "main panel";
+  gap: clamp(24px, 4vw, 64px);
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+main { grid-area: main; min-width: 0; padding-block: 48px 120px; }
+.panel { grid-area: panel; min-width: 0; }
+.panel-inner {
+  position: sticky; top: env(safe-area-inset-top, 0px);
+  padding-block: 32px; display: flex; flex-direction: column; gap: 18px;
+  max-height: 100vh; overflow-y: auto;
+}
+
+/* Hero */
+.kicker { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(64px, 11vw, 132px); line-height: .88; letter-spacing: -.01em; margin: 14px 0 18px; text-transform: uppercase; text-wrap: balance; }
+.dek { font-size: clamp(20px, 2.4vw, 25px); line-height: 1.4; max-width: 34ch; margin: 0 0 22px; text-wrap: balance; }
+.fiction { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); border: 1px solid var(--rule); padding: 8px 12px; display: inline-block; margin: 0; }
+.yearnav { display: flex; flex-wrap: wrap; gap: 6px; margin: 28px 0 0; }
+.yearnav a { font-family: var(--f-mono); font-size: 13px; text-decoration: none; padding: 5px 9px; border: 1px solid var(--rule); color: var(--muted); }
+.yearnav a:hover { color: var(--ink); border-color: var(--ink); }
+.yearnav a.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.prose { max-width: 62ch; }
+.prose h2 { font-family: var(--f-display); font-weight: 600; font-size: 30px; text-transform: uppercase; letter-spacing: .01em; margin: 64px 0 8px; }
+.prose p { margin: 0 0 16px; }
+.stadium { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 22px 0 26px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.stadium figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.tank { height: 64px; border: 1px solid var(--rule); background: var(--surface); position: relative; }
+.tank i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--s-compute); opacity: .75; }
+
+.fig { margin: 26px 0 30px; display: flex; flex-direction: column; gap: 8px; }
+.fig-title { font-family: var(--f-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.fig-box { background: var(--surface); border: 1px solid var(--rule); padding: 10px 8px 4px; }
+.fig-svg { display: block; width: 100%; height: auto; }
+.fig-svg .g { stroke: var(--rule); stroke-width: 1; }
+.fig-svg text { font-family: var(--f-mono); fill: var(--muted); }
+.fig-svg .ax { font-size: 11px; }
+.fig-svg .ttl { font-size: 12px; fill: var(--ink); }
+.fig-svg .val { font-size: 12.5px; font-weight: 500; fill: var(--ink); }
+.fig-svg .col { fill: var(--s-rev); }
+.fig-svg .col.ghost { fill: none; stroke: var(--s-rev); stroke-width: 1.6; stroke-dasharray: 4 3; }
+.fig-svg .scen { fill: var(--rule); opacity: .35; }
+.fig-svg .ln { fill: none; stroke-width: 2.4; stroke-linejoin: round; }
+.fig-svg .ln.rev { stroke: var(--s-rev); }
+.fig-svg .ln.jobs { stroke: var(--ink); }
+.fig-svg .area { fill: var(--ink); opacity: .08; }
+.fig-svg .dt.rev { fill: var(--s-rev); }
+.fig-svg .dt.jobs { fill: var(--ink); }
+.fig-note { font-family: var(--f-mono); font-size: 11.5px; line-height: 1.5; color: var(--muted); margin: 0; }
+
+/* Years */
+.year { padding-top: 96px; }
+.year-head { border-top: 3px solid var(--ink); padding-top: 14px; }
+.year-num { font-family: var(--f-display); font-weight: 800; font-size: clamp(88px, 14vw, 168px); line-height: .82; color: var(--accent); margin: 0; font-variant-numeric: tabular-nums; }
+.year-head h2 { font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 3.6vw, 40px); text-transform: uppercase; line-height: 1; margin: 10px 0 0; text-wrap: balance; }
+.year-intro { max-width: 62ch; margin: 26px 0 8px; }
+.year-intro p { margin: 0 0 16px; font-size: 19px; }
+.year-intro p:first-child::first-letter { font-family: var(--f-display); font-weight: 800; float: left; font-size: 74px; line-height: .8; padding: 6px 8px 0 0; color: var(--ink); }
+.stories { display: flex; flex-direction: column; max-width: 62ch; }
+.story { border-top: 1px solid var(--rule); padding-block: 20px 6px; }
+.dateline { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; display: flex; gap: 14px; flex-wrap: wrap; }
+.dateline span:first-child { color: var(--accent); }
+.story h3 { font-family: var(--f-body); font-weight: 600; font-size: 22px; line-height: 1.22; margin: 0 0 8px; text-wrap: balance; }
+.story p:last-child { margin: 0 0 12px; color: var(--ink); }
+
+.endnote { margin-top: 96px; border-top: 3px solid var(--ink); padding-top: 18px; }
+.endnote h2 { margin-top: 0; }
+.endnote p { color: var(--muted); font-size: 16px; }
+
+/* Panel */
+.p-top { display: flex; justify-content: space-between; align-items: end; gap: 12px; }
+.p-label { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.p-when { font-family: var(--f-display); font-weight: 800; font-size: 52px; line-height: .85; margin: 4px 0 0; font-variant-numeric: tabular-nums; }
+.p-era { font-family: var(--f-mono); font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: .08em; text-align: right; margin: 0; max-width: 18ch; }
+.chart-box { background: var(--surface); border: 1px solid var(--rule); padding: 8px 6px 2px; }
+#chart { display: block; width: 100%; height: auto; }
+#chart text { font-family: var(--f-mono); font-size: 10px; fill: var(--muted); }
+#chart .grid { stroke: var(--rule); stroke-width: 1; }
+#chart .now { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 3; }
+.readouts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.readouts li { border-bottom: 1px solid var(--rule); }
+.readouts button {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+  display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline;
+  padding: 7px 2px;
+}
+.readouts button:focus-visible { outline: 2px solid var(--accent); }
+.sw { width: 12px; height: 3px; align-self: center; border-radius: 1px; }
+.r-name { font-family: var(--f-body); font-size: 15px; line-height: 1.25; }
+.r-val { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.r-mult { grid-column: 2 / 4; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.readouts button[aria-pressed="false"] { opacity: .4; }
+.readouts button[aria-pressed="false"] .sw { background: transparent !important; outline: 1px solid var(--muted); }
+.uk { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.uk div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.uk b { font-family: var(--f-display); font-weight: 800; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.uk span { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+.bar { height: 4px; background: var(--rule); margin-top: 4px; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.p-note { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "panel" "main"; gap: 0; }
+  .panel { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--rule); margin-inline: calc(-1 * clamp(16px, 4vw, 48px)); padding-inline: clamp(16px, 4vw, 48px); }
+  .panel-inner { position: static; padding-block: 10px; gap: 8px; max-height: none; overflow: visible; }
+  .p-when { font-size: 34px; }
+  .chart-box { padding: 2px; }
+  #chart { max-height: 24vh; }
+  .readouts { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+  .readouts li { border: 1px solid var(--rule); flex: 0 0 auto; }
+  .readouts button { padding: 4px 8px; grid-template-columns: 10px auto; gap: 0 6px; }
+  .r-name { font-size: 12px; }
+  .r-val { grid-column: 2; text-align: left; font-size: 12px; }
+  .r-mult, .uk, .p-note, .p-label { display: none; }
+  main { padding-top: 32px; }
+  .year { padding-top: 64px; scroll-margin-top: 40vh; }
+}
+@media (min-width: 901px) { .year { scroll-margin-top: 0; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+<aside class="panel" aria-label="Growth chart">
+  <div class="panel-inner">
+    <div class="p-top">
+      <div>
+        <p class="p-label">Reading</p>
+        <p class="p-when" id="when">2026</p>
+      </div>
+      <p class="p-era" id="era">Before the flood</p>
+    </div>
+    <div class="chart-box">
+      <svg id="chart" viewBox="0 0 400 250" role="img" aria-label="Log-scale chart of growth since 2026 in AI revenue, compute, agents, humanoid robots, tech valuations and frontier model size"></svg>
+    </div>
+    <ul class="readouts" id="readouts"></ul>
+    <div class="uk">
+      <div><b id="uk-work">61%</b><span>UK adults in paid work</span></div>
+      <div><b id="uk-div">£0</b><span>Citizen cash payment a month</span></div>
+      <div><b id="uk-local">5%</b><span>AI work run on local machines</span><div class="bar"><i id="uk-bar" style="width:5%"></i></div></div>
+    </div>
+    <p class="p-note">Lines show growth since 2026 on a log scale: each gridline is ten times the one below. Tap a series to hide it. All figures are invented for this story.</p>
+  </div>
+</aside>
+
+<main>
+  <header>
+    <p class="kicker">A chronicle of Britain, 2027 to 2035</p>
+    <h1>The Great Whiplash</h1>
+    <p class="dek">How AI agents, humanoid robots and a government playing catch-up remade the British economy in nine years.</p>
+    <p class="fiction">Speculative fiction. Every headline, quote and figure on this page is invented.</p>
+    <nav class="yearnav" id="yearnav" aria-label="Jump to year"><a href="#y2027">2027</a><a href="#y2028">2028</a><a href="#y2029">2029</a><a href="#y2030">2030</a><a href="#y2031">2031</a><a href="#y2032">2032</a><a href="#y2033">2033</a><a href="#y2034">2034</a><a href="#y2035">2035</a></nav>
+  </header>
+
+  <div class="prose">
+    <h2>Before the flood</h2>
+    <p>In 2026, AI companies earned about $100 billion. That sounded like a lot, but it was a rounding error in a world economy worth over $100 trillion. The number that mattered was the growth rate. The leading AI companies were growing several times over every year, and the fastest, Anthropic, was selling 14 times more than a year earlier. This story assumes the whole industry now grows tenfold a year, and that nothing stops it.</p>
+    <figure class="fig">
+      <figcaption class="fig-title">AI company revenue, a year at a time</figcaption>
+      <div class="fig-box"><svg class="fig-svg" viewBox="0 0 640 300" role="img" aria-label="AI company revenue run-rate rising from about 2 billion dollars in December 2023 to about 114 billion in June 2026, and 1 trillion in this story by December 2027"><line class="g" x1="58" x2="624" y1="254.0" y2="254.0"/><text class="ax" x="50" y="258.0" text-anchor="end">$1bn</text><line class="g" x1="58" x2="624" y1="186.1" y2="186.1"/><text class="ax" x="50" y="190.1" text-anchor="end">$10bn</text><line class="g" x1="58" x2="624" y1="118.3" y2="118.3"/><text class="ax" x="50" y="122.3" text-anchor="end">$100bn</text><line class="g" x1="58" x2="624" y1="50.4" y2="50.4"/><text class="ax" x="50" y="54.4" text-anchor="end">$1tn</text><rect class="scen" x="437.3" y="10" width="186.7" height="244"/><text class="ax" x="445.3" y="24">THIS STORY</text><text class="ax" x="58" y="24">REPORTED</text><rect class="col" x="85.1" y="233.6" width="30" height="20.4"/><text class="val" x="100.1" y="226.6" text-anchor="middle">~$2bn</text><text class="ax" x="100.1" y="272" text-anchor="middle">Dec 2023</text><rect class="col" x="205.6" y="196.7" width="30" height="57.3"/><text class="val" x="220.6" y="189.7" text-anchor="middle">~$7bn</text><text class="ax" x="220.6" y="272" text-anchor="middle">Dec 2024</text><rect class="col" x="326.0" y="153.8" width="30" height="100.2"/><text class="val" x="341.0" y="146.8" text-anchor="middle">$30bn</text><text class="ax" x="341.0" y="272" text-anchor="middle">Dec 2025</text><rect class="col" x="386.2" y="114.4" width="30" height="139.6"/><text class="val" x="401.2" y="107.4" text-anchor="middle">$114bn</text><text class="ax" x="401.2" y="272" text-anchor="middle">Jun 2026</text><rect class="col ghost" x="566.9" y="50.4" width="30" height="203.6"/><text class="val" x="581.9" y="43.4" text-anchor="middle">$1tn</text><text class="ax" x="581.9" y="272" text-anchor="middle">Dec 2027</text></svg></div>
+      <p class="fig-note">Each gridline is ten times the one below. Reported bars show the combined annual revenue run-rate of Anthropic and OpenAI, read from a Dealroom chart of August 2026, so they are approximate. The Dec 2027 bar is this story's assumption, not a forecast.</p>
+    </figure>
+    <p>On a chart like this, growth looks steady: each bar is a similar step up. In real money, each step is enormous. Going from $100 billion to $1 trillion adds more revenue in one year than the industry had earned in its whole history, and the year after that adds ten times as much again.</p>
+    <p>Picture a football stadium being filled with water, where the water doubles every minute and the stadium is full after 50 minutes. Five minutes before it is full, the stadium is only about 3% full. Someone standing in the stands would see a few puddles on the pitch and think there was plenty of time.</p>
+    <div class="stadium" aria-label="Stadium fill level, minutes 45 to 50">
+      <figure><div class="tank"><i style="height:3.1%"></i></div><figcaption>Min 45 · 3%</figcaption></figure>
+      <figure><div class="tank"><i style="height:6.25%"></i></div><figcaption>Min 46 · 6%</figcaption></figure>
+      <figure><div class="tank"><i style="height:12.5%"></i></div><figcaption>Min 47 · 13%</figcaption></figure>
+      <figure><div class="tank"><i style="height:25%"></i></div><figcaption>Min 48 · 25%</figcaption></figure>
+      <figure><div class="tank"><i style="height:50%"></i></div><figcaption>Min 49 · 50%</figcaption></figure>
+      <figure><div class="tank"><i style="height:100%"></i></div><figcaption>Min 50 · full</figcaption></figure>
+    </div>
+    <p>This chronicle imagines that 2026 was minute 45. AI agents take over routine office work, Chinese factories turn out humanoid robots by the million, and Britain, a country with plenty of AI users and almost no AI owners, has to work out how to keep its economy standing.</p>
+    <h2>Where the money comes from</h2>
+    <p>That revenue does not appear from nowhere. Most of it is paid by managers who buy AI agents to do work that people used to do: answering customers, processing claims, drafting contracts, checking accounts. When a firm spends £10,000 a year on agents instead of £40,000 on a salary, the AI company's revenue goes up and a job goes away.</p>
+    <p>So the two numbers move together. The bigger the flow of money to AI companies, the more wages it has replaced, and the more people are out of work. In this story, every tenfold jump in AI revenue is matched by another wave of redundancies, starting with the best-paid office jobs and spreading outwards to the shops, cafés and landlords those workers used to pay.</p>
+    <figure class="fig">
+      <figcaption class="fig-title">As AI revenue grows, paid work shrinks</figcaption>
+      <div class="fig-box"><svg class="fig-svg" viewBox="0 0 640 360" role="img" aria-label="Two charts sharing a timeline from 2026 to 2035. AI company revenue rises from 100 billion to 1,400 trillion dollars. The share of UK adults without a paid job rises from 39% to 60%."><text class="ttl" x="74" y="14">AI company revenue a year (log scale)</text><line class="g" x1="74" x2="624" y1="142.0" y2="142.0"/><text class="ax" x="66" y="146.0" text-anchor="end">$100bn</text><line class="g" x1="74" x2="624" y1="88.3" y2="88.3"/><text class="ax" x="66" y="92.3" text-anchor="end">$10tn</text><line class="g" x1="74" x2="624" y1="34.7" y2="34.7"/><text class="ax" x="66" y="38.7" text-anchor="end">$1,000tn</text><path class="ln rev" d="M74.0,142.0 L135.1,115.1 L196.2,94.3 L257.3,61.5 L318.4,54.7 L379.6,48.7 L440.7,41.7 L501.8,34.7 L562.9,32.6 L624.0,30.8"/><circle class="dt rev" cx="74.0" cy="142.0" r="3"/><circle class="dt rev" cx="135.1" cy="115.1" r="3"/><circle class="dt rev" cx="196.2" cy="94.3" r="3"/><circle class="dt rev" cx="257.3" cy="61.5" r="3"/><circle class="dt rev" cx="318.4" cy="54.7" r="3"/><circle class="dt rev" cx="379.6" cy="48.7" r="3"/><circle class="dt rev" cx="440.7" cy="41.7" r="3"/><circle class="dt rev" cx="501.8" cy="34.7" r="3"/><circle class="dt rev" cx="562.9" cy="32.6" r="3"/><circle class="dt rev" cx="624.0" cy="30.8" r="3"/><text class="ttl" x="74" y="186">UK adults without a paid job</text><line class="g" x1="74" x2="624" y1="285.7" y2="285.7"/><text class="ax" x="66" y="289.7" text-anchor="end">40%</text><line class="g" x1="74" x2="624" y1="251.4" y2="251.4"/><text class="ax" x="66" y="255.4" text-anchor="end">50%</text><line class="g" x1="74" x2="624" y1="217.1" y2="217.1"/><text class="ax" x="66" y="221.1" text-anchor="end">60%</text><path class="area" d="M74.0,289.1 L135.1,285.7 L196.2,265.1 L257.3,251.4 L318.4,244.6 L379.6,237.7 L440.7,230.9 L501.8,224.0 L562.9,220.6 L624.0,217.1 L624.0,320 L74.0,320 Z"/><path class="ln jobs" d="M74.0,289.1 L135.1,285.7 L196.2,265.1 L257.3,251.4 L318.4,244.6 L379.6,237.7 L440.7,230.9 L501.8,224.0 L562.9,220.6 L624.0,217.1"/><circle class="dt jobs" cx="74.0" cy="289.1" r="3"/><circle class="dt jobs" cx="135.1" cy="285.7" r="3"/><circle class="dt jobs" cx="196.2" cy="265.1" r="3"/><circle class="dt jobs" cx="257.3" cy="251.4" r="3"/><circle class="dt jobs" cx="318.4" cy="244.6" r="3"/><circle class="dt jobs" cx="379.6" cy="237.7" r="3"/><circle class="dt jobs" cx="440.7" cy="230.9" r="3"/><circle class="dt jobs" cx="501.8" cy="224.0" r="3"/><circle class="dt jobs" cx="562.9" cy="220.6" r="3"/><circle class="dt jobs" cx="624.0" cy="217.1" r="3"/><text class="val" x="80.0" y="305.1">39%</text><text class="val" x="624.0" y="208.1" text-anchor="end">60%</text><text class="ax" x="74.0" y="348" text-anchor="middle">’26</text><text class="ax" x="135.1" y="348" text-anchor="middle">’27</text><text class="ax" x="196.2" y="348" text-anchor="middle">’28</text><text class="ax" x="257.3" y="348" text-anchor="middle">’29</text><text class="ax" x="318.4" y="348" text-anchor="middle">’30</text><text class="ax" x="379.6" y="348" text-anchor="middle">’31</text><text class="ax" x="440.7" y="348" text-anchor="middle">’32</text><text class="ax" x="501.8" y="348" text-anchor="middle">’33</text><text class="ax" x="562.9" y="348" text-anchor="middle">’34</text><text class="ax" x="624.0" y="348" text-anchor="middle">’35</text></svg></div>
+      <p class="fig-note">Both lines are this story's invented figures, the same ones used in the chart beside the text. Adults without a paid job includes people who are unemployed, retired or not looking for work.</p>
+    </figure>
+    <p>The chart beside the text moves as you read. It tracks AI revenue, computing power, the number of AI agents at work, humanoid robots in service, and the stock market value of AI and robotics firms. It also tracks the size of the largest AI model, which grows from about 10 trillion parameters in 2026 to a quadrillion in 2034, ten times the number of synapses in a human brain, before levelling off. Even as the giants grow, more of the everyday work moves to smaller copies running on computers that ordinary businesses and households own.</p>
+  </div>
+
+<section class="year" id="y2027" data-year="2027">
+  <header class="year-head">
+    <p class="year-num">2027</p>
+    <h2>The Boom That Feels Wrong</h2>
+  </header>
+  <div class="year-intro"><p>AI company revenue goes from about $100 billion in 2026 to $1 trillion in 2027. Almost all of it comes from the same buyer: a manager with a budget and a team doing routine office work. Agents now draft the contracts, reconcile the accounts, answer the customers and write the reports. They do it for a fraction of a salary, and they do not need a desk.</p><p>In Britain the effect is strange. Share prices climb and company profits hit records, but hardly anyone is hiring. Graduate schemes are quietly cancelled. People who still have jobs keep them, but they stop expecting pay rises. The country uses AI heavily but owns very little of it, so most of the money flows to firms in California.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Feb 2027</span><span>London</span></p>
+  <h3>Corporate profit margins hit record 22% as firms cut staff costs by a third</h3>
+  <p>Results season shows the same pattern from insurers to housebuilders: headcount down, output up, margins at levels never recorded before. Finance directors describe it as &quot;agent substitution&quot; in their earnings calls. Unions call it something else.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2027</span><span>Threadneedle Street</span></p>
+  <h3>Bank of England puzzled as productivity jumps 6% while wages stall</h3>
+  <p>Britain&#x27;s productivity problem, a fixture of every Budget for fifteen years, disappears in a single quarter. Pay does not follow. The Bank&#x27;s chief economist tells MPs the link between output and wages &quot;may be weaker than our models assume&quot;.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2027</span><span>London Metal Exchange</span></p>
+  <h3>Uranium, copper and transformer makers surge 80% as the picks-and-shovels trade takes off</h3>
+  <p>Data centres need power, and power needs cables, transformers and fuel. Investors pile into the companies that make the boring parts. One small grid-equipment maker in the Midlands sees its share price triple and its order book stretch to 2031.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2027</span><span>New York</span></p>
+  <h3>Hyperscalers raise $400bn in bonds to fund data centres, the largest borrowing wave in history</h3>
+  <p>The four biggest cloud companies borrow more in six months than the UK government borrows in a year. The money pays for chips, land and power contracts. Bond investors are happy to lend. Some analysts point out that the debt only makes sense if revenue keeps growing tenfold.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2027</span><span>Canary Wharf</span></p>
+  <h3>Commercial office values fall 25% as banks quietly mark down loans</h3>
+  <p>Firms that shed a third of their staff do not need a third of their floors. Sublet notices pile up across the City and in regional centres from Leeds to Bristol. Lenders write down office loans in small steps to avoid alarming anyone.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2027</span><span>Hangzhou</span></p>
+  <h3>Chinese lab finishes training a 30 trillion parameter model, three times the largest in the West</h3>
+  <p>The model was trained on a cluster of domestic chips that export controls were meant to prevent. Western labs respond by announcing even bigger training runs. In the race for scale, size is once again the headline number.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2027</span><span>HM Treasury</span></p>
+  <h3>Income tax receipts miss forecast by £30bn; Chancellor blames a &quot;temporary adjustment&quot;</h3>
+  <p>The shortfall is the first sign that the tax system is built on wages. Income tax and National Insurance make up about half of government revenue, and both are falling. The Office for Budget Responsibility says it cannot yet tell how much of the gap is permanent.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2027</span><span>London</span></p>
+  <h3>Consumer confidence falls to its lowest since 2008, despite record share prices</h3>
+  <p>Households with pensions and shares feel rich on paper. Everyone else feels nervous. Spending on holidays, cars and eating out drops sharply among people under 45, the group most likely to work in an office.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2027</span><span>Santa Clara</span></p>
+  <h3>Nvidia becomes the first $15 trillion company, worth more than four times the London stock market</h3>
+  <p>One chipmaker is now worth more than every company listed in London put together, several times over. The comparison is repeated in Parliament as proof that Britain has missed the boat.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2027</span><span>New York</span></p>
+  <h3>Nasdaq passes 40,000 as AI revenues hit $1 trillion: &quot;Best year for profits ever, worst for hiring&quot;</h3>
+  <p>The index ends the year up more than 70%. AI revenue crosses $1 trillion, ten times the level of a year earlier. Job adverts for office roles in the UK are down 40% on the year.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2027</span><span>London</span></p>
+  <h3>Analysts split: &quot;The greatest productivity miracle ever&quot; or &quot;the biggest bubble since the railways&quot;</h3>
+  <p>Both camps agree on the numbers and disagree on what happens next. Optimists see a world of cheap services. Pessimists ask who will buy them if wages keep falling. Both turn out to be right, in that order.</p>
+</article></div>
+</section>
+<section class="year" id="y2028" data-year="2028">
+  <header class="year-head">
+    <p class="year-num">2028</p>
+    <h2>The Demand Shock</h2>
+  </header>
+  <div class="year-intro"><p>The problem in 2027 was that wages stopped growing. The problem in 2028 is that they disappear. Office workers who lose their jobs stop buying lunch, work clothes, train tickets and coffee. The sandwich shop near the business park loses half its trade. Its owner falls behind on the mortgage. The bank that lent to both of them starts to worry.</p><p>This chain reaction moves faster than anyone in government expected. Unemployment rises, house prices fall, and the shops and pubs that depended on office workers start closing. AI firms keep reporting record profits through all of it. The government has to step in, but it has a hard question to answer first: where will the money come from in a country with no AI giant to tax?</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Feb 2028</span><span>Global markets</span></p>
+  <h3>Global stocks fall 30% in six weeks as consumer spending collapses</h3>
+  <p>The selloff starts with retailers and banks, then spreads to everything. Even AI stocks fall for a while, as investors realise that the companies buying AI services also need customers.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2028</span><span>Manchester</span></p>
+  <h3>Office managers move AI agents onto their own servers to cut bills</h3>
+  <p>With budgets squeezed, firms discover that open models running on a rack in the basement can do most of the routine work for a tenth of the cloud price. About one task in eight now runs on hardware the customer owns. AI companies&#x27; revenue keeps rising, but not as fast as the work being done.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2028</span><span>UK high streets</span></p>
+  <h3>Retail sector shrinks by a fifth: 4,000 stores close in a single quarter</h3>
+  <p>Town centres built around office footfall are hit hardest. Clothing, coffee and convenience chains close branches in clusters. In some streets in central Birmingham and Glasgow, every second unit is empty.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2028</span><span>Threadneedle Street</span></p>
+  <h3>UK unemployment hits 9%; Bank of England cuts rates to 1% in emergency move</h3>
+  <p>The Bank cuts by a full point at an unscheduled meeting. Unemployment has nearly doubled in eighteen months, and the job losses are concentrated in well-paid roles in finance, law, marketing and administration.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2028</span><span>London</span></p>
+  <h3>House prices fall 18% in a quarter; mortgage lenders freeze new lending</h3>
+  <p>Buyers vanish as people with secure office jobs become rare. Lenders pull products overnight. Estate agents report that the only active buyers are cash investors picking up repossessions.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2028</span><span>Leeds</span></p>
+  <h3>Three UK building societies ask for government support as arrears triple</h3>
+  <p>Mutual lenders, which lend mostly to ordinary homeowners, are the first to run short of capital. The Treasury guarantees their deposits within a weekend to prevent a run.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2028</span><span>Lloyd&#x27;s of London</span></p>
+  <h3>Insurance firms warn of an &quot;unmodellable&quot; wave of defaults and claims</h3>
+  <p>Income protection, mortgage insurance and trade credit claims arrive at once. Actuaries say their models assumed job losses would be spread across sectors. This time they are concentrated in exactly the people who held the policies.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2028</span><span>London</span></p>
+  <h3>Gilt yields spike to 7% as investors question the UK&#x27;s ability to fund bailouts</h3>
+  <p>The memory of the 2022 mini-budget hangs over the market. Investors fear the government will have to borrow huge sums with a shrinking tax base. Pension funds are forced to sell assets to meet collateral calls.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2028</span><span>Currency markets</span></p>
+  <h3>Sterling falls to $1.00 as investors flee &quot;the country that builds nothing&quot;</h3>
+  <p>Parity with the dollar is reached on a Tuesday afternoon. Traders point to a country that buys its AI from America and its robots from China, and sells services that machines now provide.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2028</span><span>Paris</span></p>
+  <h3>AI firms report record profits in the same week the OECD declares a global recession</h3>
+  <p>The two headlines appear side by side on the front pages. The contrast becomes the image of the year: booming production, collapsing demand.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2028</span><span>House of Commons</span></p>
+  <h3>&quot;Where is the money coming from?&quot; Chancellor&#x27;s emergency Budget leaves markets unconvinced</h3>
+  <p>The plan has four parts: the Bank of England to bridge the gap, a new levy on AI services sold in Britain, a windfall tax on automation profits in place of employer National Insurance, and a cash payment to every adult from spring. The opposition calls it a wish list. The markets wait to see if the Bank will really do its part.</p>
+</article></div>
+</section>
+<section class="year" id="y2029" data-year="2029">
+  <header class="year-head">
+    <p class="year-num">2029</p>
+    <h2>Rewriting the Rules</h2>
+  </header>
+  <div class="year-intro"><p>The emergency Budget becomes law, and 2029 is the year it is tested. The Bank of England buys government debt to keep borrowing costs down, buying time while new taxes are built. The government stops trying to tax AI companies where they are based and taxes them where their customers are: every AI service sold to a British business or household, and every data centre that wants a grid connection.</p><p>The new Citizens&#x27; Dividend costs about £260 billion a year before anything is clawed back. In practice it costs far less, because it replaces most working-age benefits, is taxed back from people still earning well, and is spent almost immediately in local shops, where VAT and business rates return part of it to the Treasury. By the end of the year, the high street has stopped falling.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Jan 2029</span><span>Threadneedle Street</span></p>
+  <h3>Bank of England buys £300bn of gilts: &quot;Quantitative easing for people, not banks&quot;</h3>
+  <p>The Bank&#x27;s biggest ever single programme brings gilt yields back below 4%. Critics call it printing money. The Bank argues that with prices of goods falling, the usual inflation risk does not apply.</p>
+</article><article class="story">
+  <p class="dateline"><span>Feb 2029</span><span>London</span></p>
+  <h3>Two high street banks nationalised; shareholders wiped out</h3>
+  <p>Unlike 2008, there is no attempt to save the shareholders. The state takes full ownership. Officials say that when the recovery comes, the public will own it.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2029</span><span>Shenzhen</span></p>
+  <h3>First 100 trillion parameter model matches the number of synapses in a human brain</h3>
+  <p>The model handles vision, sound, speech and movement in one system, and it is built to be the shared brain for a fleet of humanoid robots. Researchers caution that a parameter is not a synapse. The press runs the comparison anyway.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2029</span><span>Downing Street</span></p>
+  <h3>UK launches a Citizens&#x27; Dividend of £400 a month, funded by a new compute levy</h3>
+  <p>Every adult receives the payment, about 54 million people. It replaces Universal Credit&#x27;s standard allowance and is taxed back from higher earners, which brings the net cost to under half the headline figure. The rest is funded by a levy on AI processing used in the UK and a withholding tax on payments to overseas AI providers.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2029</span><span>London</span></p>
+  <h3>Tech giants threaten to relocate; ministers reply with conditions on energy access</h3>
+  <p>Two cloud providers say the compute levy makes Britain uncompetitive. The government&#x27;s answer is simple: data centres need grid connections and planning permission, and both are now conditional on paying the levy. Neither firm leaves.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2029</span><span>London</span></p>
+  <h3>Pension funds begin buying direct stakes in AI and robotics firms</h3>
+  <p>The largest UK pension schemes move money out of property and into the companies replacing their members&#x27; jobs. It is described as hedging: if wages vanish, at least the pensions own the machines.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2029</span><span>Office for National Statistics</span></p>
+  <h3>Deflation takes hold: the price of goods falls 20% as automated production floods markets</h3>
+  <p>Furniture, appliances, clothes and packaged food are all cheaper than a year ago. Services fall too. For households receiving the dividend, the money goes further each month.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2029</span><span>Geneva</span></p>
+  <h3>G7 agrees a minimum tax on automated labour as the &quot;robot tax&quot; treaty is signed</h3>
+  <p>The treaty extends the 15% global minimum corporate tax to cover profits from automation. Countries can no longer undercut each other by offering AI firms tax holidays. Britain, with no national champion to protect, is one of its strongest backers.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2029</span><span>Cambridge</span></p>
+  <h3>Economists admit GDP is &quot;a broken metric&quot; as output soars while household incomes fall</h3>
+  <p>GDP rises because machines produce more, but the typical household is poorer than in 2026. A group of economists writes an open letter asking the government to stop using GDP as its main target.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2029</span><span>Global</span></p>
+  <h3>Global AI revenue passes $100 trillion, more than all Western GDP combined</h3>
+  <p>The figure is a hundred times the level of two years earlier. Part of it is real output and part of it is accounting, as agents bill other agents for services. Nobody can agree which part is which.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2029</span><span>London</span></p>
+  <h3>Stock markets finish the year up 40% from the bottom: &quot;a recovery with no one in it&quot;</h3>
+  <p>Share prices recover, profits recover, house prices stabilise. Employment does not. The phrase &quot;a recovery with no one in it&quot; is used in a Commons debate and sticks.</p>
+</article></div>
+</section>
+<section class="year" id="y2030" data-year="2030">
+  <header class="year-head">
+    <p class="year-num">2030</p>
+    <h2>Ownership Becomes the Story</h2>
+  </header>
+  <div class="year-intro"><p>With the crisis contained, the argument moves on. If wages are no longer how most people get a share of what the economy produces, then something else has to be. In 2030 Britain answers with ownership: a national fund that holds shares in the automated economy on behalf of every citizen.</p><p>Meanwhile, AI splits in two. The biggest models keep growing, passing 200 trillion parameters, and live in giant data centres. But each one is used to train smaller copies that can do most routine work on ordinary machines in offices and homes. For a country with few AI labs but plenty of computers, this matters.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Jan 2030</span><span>HM Treasury</span></p>
+  <h3>UK launches a Sovereign AI Fund; every citizen to receive shares at birth</h3>
+  <p>The fund starts with the government&#x27;s stakes in the nationalised banks, a share of the compute levy and the proceeds of the windfall tax. Norway built its fund from oil. Britain is building one from a tax on machines, late and from scratch.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2030</span><span>Office for National Statistics</span></p>
+  <h3>Labour&#x27;s share of GDP falls below 40%, the lowest in recorded history</h3>
+  <p>Wages and salaries now make up less than two fifths of national income. In 2026 they were well over half. The rest goes to profits, rents and, increasingly, the state&#x27;s own holdings.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2030</span><span>Washington</span></p>
+  <h3>IMF: &quot;The wage is no longer the main mechanism of distribution&quot;</h3>
+  <p>The IMF&#x27;s annual outlook carries a chapter titled &quot;After Wages&quot;. It recommends citizen funds, consumption taxes and public equity stakes, a list that closely matches what Britain has already done.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2030</span><span>HM Treasury</span></p>
+  <h3>Taxes on companies now provide 55% of UK government revenue, up from 18%</h3>
+  <p>The tax system has turned over in three years. Profits, AI services and compute now carry the state. Income tax still exists, but a growing share of adults no longer pay any.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2030</span><span>London</span></p>
+  <h3>Giant models teach, small models work: a quarter of AI now runs on machines users own</h3>
+  <p>The largest models now pass 200 trillion parameters, but few people use them directly. Their main job is training compact versions that fit on a desktop or inside a robot. A model on a high-end home computer now matches the best cloud model of 2027, and the first optical chips are making it faster still.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2030</span><span>Sheffield</span></p>
+  <h3>Trades and care workers see wages rise 30% as the scarcest remaining human skills</h3>
+  <p>Plumbers, electricians, nurses and care workers are now among the best-paid workers in the country. Robots can lift and carry, but rewiring an old house or comforting a frightened patient still needs a person.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2030</span><span>London</span></p>
+  <h3>&quot;Human-made&quot; premium creates a £200bn luxury market in craft, food and live performance</h3>
+  <p>A handmade chair, a meal cooked by a person, a play with real actors: these become status goods. Market stalls and small workshops reopen in empty shop units.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2030</span><span>UK</span></p>
+  <h3>Property values stabilise as converted high streets and cheap robot construction boost supply</h3>
+  <p>Empty offices and shops are being turned into flats by robotic construction crews at half the old cost. Prices stop falling and settle around a quarter below their 2027 peak.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2030</span><span>Downing Street</span></p>
+  <h3>Citizens&#x27; Dividend raised to £900 a month; inflation stays near zero</h3>
+  <p>The increase is paid for by the compute levy, which has grown with AI use. Prices barely move, because the shops are full of goods made by machines.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2030</span><span>Global</span></p>
+  <h3>Bond markets rally as inflation fears vanish; central banks debate negative rates</h3>
+  <p>Government borrowing is cheaper than it has been for a decade. With prices falling, some central bankers argue rates should go below zero to encourage spending.</p>
+</article></div>
+</section>
+<section class="year" id="y2031" data-year="2031">
+  <header class="year-head">
+    <p class="year-num">2031</p>
+    <h2>The Great Wealth Divide</h2>
+  </header>
+  <div class="year-intro"><p>Robots arrive in force. Humanoid production passes 70 million a year, almost all of it in Chinese factories, and the price of a general-purpose robot falls below that of a small car. Farms, warehouses, ports and building sites change faster than offices did.</p><p>Things get cheaper for everyone, but the gap between people who own the machines and people who do not becomes enormous. The richest one percent own more of the world than at any point in modern history, and British politics turns to the question of how much the state should take.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Feb 2031</span><span>Shenzhen</span></p>
+  <h3>Humanoid robot prices fall below $10,000; leasing replaces buying across industry</h3>
+  <p>A general-purpose humanoid now costs less than a family car. Most firms lease them by the month. A British builder can hire a crew of ten robots for less than the cost of one apprentice.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2031</span><span>Lincolnshire</span></p>
+  <h3>Food prices fall 50% as robot farms scale; supermarkets merge to survive</h3>
+  <p>Robot pickers, weeders and packers work through the night. Supermarket margins collapse as prices fall, and two of the big chains announce a merger.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2031</span><span>Zurich</span></p>
+  <h3>Top 1% now hold 60% of global wealth, up from 45% in 2026</h3>
+  <p>The concentration is driven almost entirely by shares in AI and robotics firms. Most of the world&#x27;s population owns none.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2031</span><span>Global</span></p>
+  <h3>Global shipping costs collapse as crewless fleets take over</h3>
+  <p>Autonomous container ships run on schedules that human crews could not match. Freight rates fall to a third of 2026 levels.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2031</span><span>UK</span></p>
+  <h3>Half of all AI agent work now runs on local machines</h3>
+  <p>Office servers, home computers and robots themselves now handle about a third of AI processing, and closer to half of routine agent tasks. AI company revenue keeps rising, but the old assumption that every AI task sends money to a handful of firms no longer holds.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2031</span><span>HM Treasury</span></p>
+  <h3>Treasury admits the ageing-population cost problem &quot;has effectively disappeared&quot;</h3>
+  <p>For decades, the cost of caring for an older population was the biggest long-term threat to the public finances. Robots in care homes and cheap automated healthcare have removed most of it.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2031</span><span>London Stock Exchange</span></p>
+  <h3>UK&#x27;s first zero-employee company joins the FTSE 100</h3>
+  <p>The firm sells logistics planning to European retailers. It has a board, shareholders and AI agents. It has no staff at all.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2031</span><span>London</span></p>
+  <h3>Auction houses report record sales of &quot;pre-AI&quot; art, books and handwritten letters</h3>
+  <p>Anything provably made by a person before 2027 becomes collectable. A box of 1990s handwritten school reports sells for £40,000.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2031</span><span>UK</span></p>
+  <h3>UK wealth tax proposal sends 8,000 millionaires abroad in six months</h3>
+  <p>A proposed 2% annual tax on fortunes over £10 million triggers an exodus to Dubai, Singapore and Monaco. Ministers argue that the shares stay in Britain even if their owners do not.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2031</span><span>Global</span></p>
+  <h3>World&#x27;s first trillionaire named, owner of the dominant robotics and AI fleet</h3>
+  <p>A single person&#x27;s fortune passes $1 trillion, almost all of it in shares of a robotics company. In Britain, the news is used by both sides of the wealth tax argument.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2031</span><span>House of Commons</span></p>
+  <h3>Opposition calls for nationalisation of the &quot;big three&quot; automation firms</h3>
+  <p>The motion is defeated, but the vote is closer than expected. A year earlier it would have been laughed out of the chamber.</p>
+</article></div>
+</section>
+<section class="year" id="y2032" data-year="2032">
+  <header class="year-head">
+    <p class="year-num">2032</p>
+    <h2>Redesigning the Economy</h2>
+  </header>
+  <div class="year-intro"><p>Cheap energy changes the arithmetic of everything. The first commercial fusion plant opens, new reactors and storage come online, and electricity in leading countries costs less than half what it did. With energy, food and building all cheaper, the government asks a new question: rather than giving people cash, why not just provide the basics?</p><p>Britain moves from a Citizens&#x27; Dividend to Universal Basic Services. Housing, energy, local transport and a basic food allowance are covered for everyone, with a smaller cash payment on top. Taxes on work, once the backbone of the state, now raise less than a sixth of its revenue.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Jan 2032</span><span>Global</span></p>
+  <h3>First commercial fusion plant opens; energy stocks jump 25% in a day</h3>
+  <p>The plant delivers power to the grid on schedule. Energy shares jump on the expectation that cheap, abundant electricity is finally coming.</p>
+</article><article class="story">
+  <p class="dateline"><span>Feb 2032</span><span>Europe</span></p>
+  <h3>Electricity prices fall 40% in countries with new reactors and storage</h3>
+  <p>Nuclear, wind and grid-scale batteries built during the data centre boom are now producing more power than anyone expected to need. Households feel the difference immediately.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2032</span><span>Threadneedle Street</span></p>
+  <h3>Bank of England introduces &quot;citizen accounts&quot;, with digital pounds paid directly to every adult</h3>
+  <p>Every adult now has an account held directly at the central bank. Payments from the state arrive instantly and cost nothing to send.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2032</span><span>Downing Street</span></p>
+  <h3>UK replaces the Citizens&#x27; Dividend with Universal Basic Services: housing, energy, transport and food covered</h3>
+  <p>Every adult is guaranteed a home, a basic energy allowance, free local transport and a monthly food credit. A cash payment of £700 a month continues on top. Ministers argue that services delivered by robots are cheaper to provide than cash is to pay.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2032</span><span>UK</span></p>
+  <h3>Council tax scrapped, replaced by a national automation dividend</h3>
+  <p>Local councils are now funded from the compute levy and the Sovereign AI Fund. The most unpopular tax in Britain disappears with little argument.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2032</span><span>UK</span></p>
+  <h3>Housing costs fall 40% from the 2027 peak; first-time buyers return</h3>
+  <p>Robot construction, converted offices and lower land values bring homes within reach of people in their twenties for the first time in a generation.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2032</span><span>Geneva</span></p>
+  <h3>Global trade shrinks as local robot production replaces long supply chains</h3>
+  <p>When a robot factory in Sunderland can make what used to come from Asia at the same price, shipping it halfway round the world stops making sense. Trade volumes fall for the third year running.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2032</span><span>HM Treasury</span></p>
+  <h3>Tax revenue from labour falls under 15% of the total, the lowest since records began</h3>
+  <p>Income tax and National Insurance once raised half the government&#x27;s money. Now most comes from compute, consumption, profits and the returns of the Sovereign AI Fund.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2032</span><span>City of London</span></p>
+  <h3>Insurance, law and accounting now 90% automated, but fees fall to a tenth</h3>
+  <p>A will costs £20, a company audit a few hundred pounds. The professions survive, but as small firms supervising agents rather than large firms of people.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2032</span><span>UCAS</span></p>
+  <h3>&quot;Post-work economics&quot; becomes the most popular university subject</h3>
+  <p>Applications overtake law, medicine and computer science. Students want to understand the economy they are about to live in.</p>
+</article></div>
+</section>
+<section class="year" id="y2033" data-year="2033">
+  <header class="year-head">
+    <p class="year-num">2033</p>
+    <h2>The Price of Everything Falls</h2>
+  </header>
+  <div class="year-intro"><p>Prices have now fallen for four years in a row. In the old textbooks that would mean a slump. Here it means machines are making things more cheaply every year and the savings are being passed on. A house costs less to build than a car did in 2026.</p><p>The old measures of the economy stop making sense. Global AI revenue reaches a figure so large that economists stop quoting it. London, without a single AI giant of its own, finds a new role: it becomes the place where the world trades computing power.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Jan 2033</span><span>Threadneedle Street</span></p>
+  <h3>UK inflation turns negative for the fourth straight year: &quot;benign deflation&quot;, says the Bank</h3>
+  <p>Prices fall around 3% a year. Wages are no longer what most people live on, so falling prices do not trigger the spiral of pay cuts the textbooks warned about.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2033</span><span>Global</span></p>
+  <h3>Electricity prices fall 70% in leading countries; energy-hungry industries move to cheap power zones</h3>
+  <p>Steelmaking, chemicals and data centres move to wherever power is cheapest. The Scottish coast and the Humber become industrial hubs again.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2033</span><span>City of London</span></p>
+  <h3>A &quot;compute exchange&quot; opens in London, where AI processing time trades like oil</h3>
+  <p>Buyers and sellers trade hours of AI processing as futures and options. London wins the exchange because of its legal system and time zone, not because it builds the chips.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2033</span><span>UK</span></p>
+  <h3>The cost of building a house falls to £40,000; planning approval becomes the main expense</h3>
+  <p>A robot crew can build a three-bedroom house in a fortnight. The slowest and most expensive part of the process is now the planning committee.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2033</span><span>Commodity markets</span></p>
+  <h3>Commodity markets reshuffle: copper stable, oil down 60%, uranium and lithium swing wildly</h3>
+  <p>Oil demand collapses as transport electrifies. Uranium and lithium prices jump and crash with every new reactor and battery breakthrough.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2033</span><span>London</span></p>
+  <h3>Citizens, through the sovereign fund, now own 15% of UK listed companies</h3>
+  <p>The Sovereign AI Fund has become the biggest single investor in British companies. Every adult can see their share on an app.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2033</span><span>New York</span></p>
+  <h3>Credit rating agencies downgrade several nations for &quot;failing to capture automation gains&quot;</h3>
+  <p>Countries that did not tax AI use or build public stakes are now struggling to fund basic services. Britain, once a laggard, is upgraded.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2033</span><span>Geneva</span></p>
+  <h3>Governments agree an &quot;AI Profit-Sharing Treaty&quot; after talks nearly collapse</h3>
+  <p>The treaty requires AI and robotics firms to pay a share of profits to every country where their services are used. Britain&#x27;s model of taxing use rather than headquarters becomes the global standard.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2033</span><span>London School of Economics</span></p>
+  <h3>Money printed for dividends does not trigger inflation, to the astonishment of old-school economists</h3>
+  <p>Six years of central bank money paid to citizens have coincided with falling prices. A generation of economics teaching is rewritten.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2033</span><span>Global</span></p>
+  <h3>Global AI revenue hits $1 quadrillion on paper; economists admit the measure has become meaningless</h3>
+  <p>The number is a thousand times larger than in 2027. Most of it is agents trading with agents. Nobody uses it for anything.</p>
+</article></div>
+</section>
+<section class="year" id="y2034" data-year="2034">
+  <header class="year-head">
+    <p class="year-num">2034</p>
+    <h2>Overbuild and Rethink</h2>
+  </header>
+  <div class="year-intro"><p>Every boom overbuilds, and this one is no different. Data centres have been built faster than the work to fill them, partly because so much AI now runs on local machines. The first crash of the new economy is a crash in AI property.</p><p>At the same time, people start asking what all this abundance is for. The OECD replaces GDP with a new measure. Shares in live sport, travel and concerts beat AI stocks for the first time. The British debate shifts from how to survive to how to live.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Jan 2034</span><span>California</span></p>
+  <h3>First quadrillion-parameter model trained; labs say bigger is no longer better</h3>
+  <p>The model has ten times as many parameters as the human brain has synapses. It is measurably better than its predecessors, but only just. Labs announce that the next gains will come from new chips and better training, not from size, and the race to build ever larger models quietly ends.</p>
+</article><article class="story">
+  <p class="dateline"><span>Feb 2034</span><span>Global</span></p>
+  <h3>First &quot;AI overcapacity&quot; crash: data centre values fall 35% as supply outpaces demand</h3>
+  <p>Distilled models on local hardware, and the end of the race for size, mean the world needs less central computing than the builders planned for. Several data centre funds suspend withdrawals.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2034</span><span>Global</span></p>
+  <h3>Energy companies re-rated as &quot;compute utilities&quot;; two now among the world&#x27;s five largest firms</h3>
+  <p>Whoever owns cheap power owns the cost base of AI. Two energy groups overtake chipmakers in market value.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2034</span><span>Shenzhen</span></p>
+  <h3>Humanoid robot production hits 200 million a year; a second-hand robot market emerges</h3>
+  <p>Older models are sold on to small businesses and households. A five-year-old humanoid can be bought for the price of a used bicycle.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2034</span><span>National Grid</span></p>
+  <h3>UK sells surplus clean power to Europe, earning more than North Sea oil at its peak</h3>
+  <p>Offshore wind, new nuclear and storage have turned Britain into an energy exporter. The revenue goes straight into the Sovereign AI Fund.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2034</span><span>HM Treasury</span></p>
+  <h3>Sovereign AI Fund assets exceed £8 trillion, larger than total UK pension savings</h3>
+  <p>The fund now holds shares in companies all over the world. Its annual return pays for most of the state&#x27;s spending on basic services.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jul 2034</span><span>London</span></p>
+  <h3>Shares in &quot;human experience&quot; firms beat AI stocks for the first time</h3>
+  <p>Football clubs, festivals, theatres and travel firms rise as people spend more time and money on things machines cannot replace.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2034</span><span>Monaco</span></p>
+  <h3>Private jet and luxury yacht sales boom as top-tier wealth explodes</h3>
+  <p>The super-rich have never been richer. Order books at shipyards run to 2040.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2034</span><span>UK</span></p>
+  <h3>Debate rages over &quot;time wealth&quot; as nations measure hours of leisure per citizen</h3>
+  <p>Britain&#x27;s adults now average 52 hours of free time a week. Ministers start reporting it alongside the economic figures.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2034</span><span>Paris</span></p>
+  <h3>New measure replaces GDP: the &quot;Wellbeing and Access Index&quot; adopted by the OECD</h3>
+  <p>The index tracks health, housing, free time and access to services rather than output. Britain ranks seventh.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2034</span><span>Basel</span></p>
+  <h3>Central banks admit interest rates no longer control a robot-driven economy</h3>
+  <p>With production run by machines and incomes paid by funds, changing interest rates barely moves prices. Central banks turn their attention to the size of citizen payments instead.</p>
+</article></div>
+</section>
+<section class="year" id="y2035" data-year="2035">
+  <header class="year-head">
+    <p class="year-num">2035</p>
+    <h2>The New Economic Order</h2>
+  </header>
+  <div class="year-intro"><p>Eight years after the boom that felt wrong, the British economy is eight times bigger than in 2026, measured the old way. Only four adults in ten do paid work, and most of them part-time. Nobody is going hungry, nobody is going without a home, and the sovereign fund pays every adult a monthly income on top of free basic services.</p><p>The problem of producing enough has been solved. The problem that remains is who owns the machines that do the producing, and that is the argument the next decade will be about.</p></div>
+  <div class="stories"><article class="story">
+  <p class="dateline"><span>Feb 2035</span><span>Global</span></p>
+  <h3>Fusion supplies 10% of the world&#x27;s electricity; energy now under 1% of household spending</h3>
+  <p>Twenty fusion plants are running and more are under construction. A typical British household spends less on energy each month than on a takeaway.</p>
+</article><article class="story">
+  <p class="dateline"><span>Mar 2035</span><span>Global</span></p>
+  <h3>Stock markets restructured: public ownership schemes hold 30% of global equities</h3>
+  <p>Sovereign funds and citizen funds are now the biggest owners of the world&#x27;s companies. Private wealth is still enormous, but it no longer holds the majority.</p>
+</article><article class="story">
+  <p class="dateline"><span>Apr 2035</span><span>HM Treasury</span></p>
+  <h3>UK sovereign fund pays every adult £2,500 a month; basic services and dividend together replace welfare</h3>
+  <p>The Department for Work and Pensions is folded into the fund&#x27;s distribution office. Means testing, sanctions and benefit forms are gone.</p>
+</article><article class="story">
+  <p class="dateline"><span>May 2035</span><span>HM Treasury</span></p>
+  <h3>Treasury report: &quot;Ownership, not income, is now the basis of the economy&quot;</h3>
+  <p>The report&#x27;s central finding is that most British households now get more from what they own through the sovereign fund than from what they earn.</p>
+</article><article class="story">
+  <p class="dateline"><span>Jun 2035</span><span>Washington</span></p>
+  <h3>Absolute poverty ends worldwide; wealth inequality becomes the top global political issue</h3>
+  <p>The World Bank reports that nobody now lives below the extreme poverty line. At the same time, the share of wealth held by the top 0.1% has never been higher.</p>
+</article><article class="story">
+  <p class="dateline"><span>Aug 2035</span><span>Office for National Statistics</span></p>
+  <h3>UK economy is 8x its 2026 size; only 40% of adults work, and most part-time</h3>
+  <p>The average working week for those in paid work is 21 hours. The most common jobs are in care, teaching, trades, hospitality and the arts.</p>
+</article><article class="story">
+  <p class="dateline"><span>Sep 2035</span><span>Bradford</span></p>
+  <h3>Last UK Jobcentre converted into a museum of work</h3>
+  <p>Exhibits include a 2019 office cubicle, a stack of payslips and a recorded interview with a former claims handler. School trips are booked out until spring.</p>
+</article><article class="story">
+  <p class="dateline"><span>Oct 2035</span><span>Oxford</span></p>
+  <h3>Historians label 2027 to 2030 &quot;The Great Whiplash&quot;; economists agree most policy came too late</h3>
+  <p>A new history of the period argues that the crash of 2028 could have been avoided if governments had moved a year earlier. Most of the damage was done in the gap between the jobs disappearing and the new system arriving.</p>
+</article><article class="story">
+  <p class="dateline"><span>Nov 2035</span><span>Global</span></p>
+  <h3>World crosses one billion humanoid robots; global output exceeds $1,500 trillion</h3>
+  <p>There is now one humanoid robot for every eight people on Earth. Production is running at more than 350 million a year.</p>
+</article><article class="story">
+  <p class="dateline"><span>Dec 2035</span><span>London</span></p>
+  <h3>Leader column: &quot;We solved production. The next fight is about who owns it.&quot;</h3>
+  <p>The year ends with a newspaper editorial that is quoted in Parliament the next day. Britain did not build the machines, but by taxing their use and taking a share of their profits, it found a way to own part of them.</p>
+</article></div>
+</section>
+
+  <section class="endnote prose">
+    <h2>About this chronicle</h2>
+    <p>This is a thought experiment, not a forecast. It takes the growth rates of 2021 to 2026 at face value, assumes they continue, and asks what the news would look like in Britain if they did. The headlines began as a list of predictions and were expanded into stories, with year introductions explaining what changes and why.</p>
+    <p>All companies, quotes, figures and events after 2026 are fictional. The chart figures were chosen to agree with the headlines rather than with any model.</p>
+  </section>
+</main>
+</div>
+
+<script>
+(function () {
+  var Y0 = 2026, Y1 = 2035;
+  var ERAS = { 2026: "Before the flood", 2027: "The boom that feels wrong", 2028: "The demand shock", 2029: "Rewriting the rules", 2030: "Ownership becomes the story", 2031: "The great wealth divide", 2032: "Redesigning the economy", 2033: "The price of everything falls", 2034: "Overbuild and rethink", 2035: "The new economic order" };
+
+  function num(v, d) { return v.toFixed(v < 10 ? (d == null ? 1 : d) : 0); }
+  function money(tn) { return tn < 1 ? "$" + Math.round(tn * 1000) + "bn" : tn < 1000 ? "$" + num(tn) + "tn" : "$" + (tn / 1000).toFixed(2) + " quadrillion"; }
+  function count(m) { return m < 1 ? Math.round(m * 1000) + "k" : m < 1000 ? num(m) + "M" : m < 1e6 ? num(m / 1000) + "bn" : num(m / 1e6) + "tn"; }
+
+  var S = [
+    { key: "rev", name: "AI company revenue", color: "--s-rev", v: [0.1, 1, 6, 100, 180, 300, 550, 1000, 1200, 1400], fmt: function (v) { return money(v) + " / yr"; } },
+    { key: "compute", name: "AI compute (H100-equivalents)", color: "--s-compute", v: [20, 60, 150, 450, 1300, 3500, 9000, 22000, 45000, 65000], fmt: count },
+    { key: "agents", name: "AI agents at work", color: "--s-agents", v: [50, 500, 3000, 15000, 60000, 200000, 500000, 1200000, 2000000, 3000000], fmt: count },
+    { key: "robots", name: "Humanoid robots in service", color: "--s-robots", v: [0.12, 1.2, 4.7, 15.7, 47.7, 117.7, 242.7, 402.7, 642.7, 1012], fmt: count },
+    { key: "val", name: "AI and robotics firms' market value", color: "--s-val", v: [25, 60, 44, 62, 120, 230, 380, 600, 520, 760], fmt: money },
+    { key: "model", name: "Largest AI model (parameters)", color: "--s-model", v: [10, 30, 60, 100, 200, 350, 550, 800, 1000, 1000], fmt: function (v) { return v < 1000 ? Math.round(v) + "tn" : (v / 1000).toFixed(1) + " quadrillion"; }, dash: "4 3" }
+  ];
+  var UK = {
+    work: [61, 60, 54, 50, 48, 46, 44, 42, 41, 40],
+    div: [0, 0, 0, 400, 900, 1000, 700, 1100, 1800, 2500],
+    local: [5, 8, 13, 19, 27, 36, 45, 52, 58, 63]
+  };
+  S.forEach(function (s) { s.on = true; });
+
+  function geo(arr, t) {
+    var x = Math.max(0, Math.min(Y1 - Y0, t - Y0)), i = Math.min(Math.floor(x), arr.length - 2), f = x - i;
+    return arr[i] * Math.pow(arr[i + 1] / arr[i], f);
+  }
+  function lin(arr, t) {
+    var x = Math.max(0, Math.min(Y1 - Y0, t - Y0)), i = Math.min(Math.floor(x), arr.length - 2), f = x - i;
+    return arr[i] + (arr[i + 1] - arr[i]) * f;
+  }
+
+  var svg = document.getElementById("chart"), NS = "http://www.w3.org/2000/svg";
+  var W = 400, H = 250, L = 46, R = 12, T = 12, B = 26;
+  var LMIN = Math.log10(0.5), LMAX = 5.2;
+  function X(t) { return L + (t - Y0) / (Y1 - Y0) * (W - L - R); }
+  function Yv(m) { return T + (1 - (Math.log10(m) - LMIN) / (LMAX - LMIN)) * (H - T - B); }
+  function el(name, attrs, parent) { var n = document.createElementNS(NS, name); for (var k in attrs) n.setAttribute(k, attrs[k]); (parent || svg).appendChild(n); return n; }
+  function cssv(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  // static frame
+  [[1, "1×"], [10, "10×"], [100, "100×"], [1000, "1,000×"], [1e4, "10k×"], [1e5, "100k×"]].forEach(function (g) {
+    var y = Yv(g[0]);
+    el("line", { x1: L, x2: W - R, y1: y, y2: y, "class": "grid" });
+    var tx = el("text", { x: L - 6, y: y + 3.5, "text-anchor": "end" }); tx.textContent = g[1];
+  });
+  for (var yr = Y0; yr <= Y1; yr++) {
+    var tx = el("text", { x: X(yr), y: H - 8, "text-anchor": "middle" });
+    tx.textContent = "’" + String(yr).slice(2);
+  }
+  var nowLine = el("line", { y1: T, y2: H - B, "class": "now" });
+  S.forEach(function (s) {
+    s.ghost = el("path", { fill: "none", "stroke-width": 1.2, opacity: 0.18 });
+    s.path = el("path", { fill: "none", "stroke-width": 2.2, "stroke-linejoin": "round", "stroke-linecap": "round" });
+    if (s.dash) { s.path.setAttribute("stroke-dasharray", s.dash); s.ghost.setAttribute("stroke-dasharray", s.dash); }
+    s.dot = el("circle", { r: 3.6 });
+    var d = "";
+    for (var t = Y0; t <= Y1 + 1e-9; t += 0.1) d += (d ? "L" : "M") + X(t).toFixed(1) + "," + Yv(geo(s.v, t) / s.v[0]).toFixed(1);
+    s.ghost.setAttribute("d", d);
+  });
+
+  // readouts
+  var ul = document.getElementById("readouts");
+  S.forEach(function (s) {
+    var li = document.createElement("li");
+    li.innerHTML = '<button type="button" aria-pressed="true"><span class="sw"></span><span class="r-name"></span><span class="r-val"></span><span class="r-mult"></span></button>';
+    var b = li.firstChild;
+    b.querySelector(".r-name").textContent = s.name;
+    s.btn = b; s.valEl = b.querySelector(".r-val"); s.multEl = b.querySelector(".r-mult"); s.sw = b.querySelector(".sw");
+    b.addEventListener("click", function () { s.on = !s.on; b.setAttribute("aria-pressed", String(s.on)); draw(curT); });
+    ul.appendChild(li);
+  });
+
+  function colors() {
+    S.forEach(function (s) {
+      var c = cssv(s.color);
+      s.ghost.setAttribute("stroke", c); s.path.setAttribute("stroke", c); s.dot.setAttribute("fill", c); s.sw.style.background = c;
+    });
+  }
+  colors();
+  try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", colors); } catch (e) {}
+  try { new MutationObserver(colors).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] }); } catch (e) {}
+
+  function mult(m) { return m < 10 ? m.toFixed(1) + "×" : m < 1e4 ? Math.round(m).toLocaleString("en-GB") + "×" : Math.round(m / 1000).toLocaleString("en-GB") + "k×"; }
+
+  var whenEl = document.getElementById("when"), eraEl = document.getElementById("era");
+  var ukWork = document.getElementById("uk-work"), ukDiv = document.getElementById("uk-div"), ukLocal = document.getElementById("uk-local"), ukBar = document.getElementById("uk-bar");
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll("#yearnav a"));
+  var curT = Y0;
+
+  function draw(t) {
+    curT = t;
+    nowLine.setAttribute("x1", X(t)); nowLine.setAttribute("x2", X(t));
+    S.forEach(function (s) {
+      var d = "", step = 0.05, u;
+      for (u = Y0; u < t; u += step) d += (d ? "L" : "M") + X(u).toFixed(1) + "," + Yv(geo(s.v, u) / s.v[0]).toFixed(1);
+      var v = geo(s.v, t), m = v / s.v[0];
+      d += (d ? "L" : "M") + X(t).toFixed(1) + "," + Yv(m).toFixed(1);
+      s.path.setAttribute("d", d);
+      s.dot.setAttribute("cx", X(t)); s.dot.setAttribute("cy", Yv(m));
+      var vis = s.on ? "visible" : "hidden";
+      s.path.style.visibility = vis; s.dot.style.visibility = vis; s.ghost.style.visibility = vis;
+      s.valEl.textContent = s.fmt(v);
+      s.multEl.textContent = mult(m) + " since 2026";
+    });
+    var yearNow = t <= Y0 ? Y0 : Math.min(Y1, Math.ceil(t - 1e-6));
+    var q = t <= Y0 ? "" : " Q" + Math.min(4, Math.floor((t - (yearNow - 1)) * 4) + 1);
+    whenEl.textContent = yearNow + q;
+    eraEl.textContent = ERAS[yearNow];
+    ukWork.textContent = Math.round(lin(UK.work, t)) + "%";
+    var dv = lin(UK.div, t); ukDiv.textContent = "£" + (Math.round(dv / 10) * 10).toLocaleString("en-GB");
+    var lc = lin(UK.local, t); ukLocal.textContent = Math.round(lc) + "%"; ukBar.style.width = lc.toFixed(1) + "%";
+    navLinks.forEach(function (a) { a.classList.toggle("on", t > Y0 && a.getAttribute("href") === "#y" + yearNow); });
+  }
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".year"));
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var anchor = window.innerHeight * 0.55, t = Y0;
+      for (var i = 0; i < sections.length; i++) {
+        var r = sections[i].getBoundingClientRect(), y = +sections[i].dataset.year;
+        if (r.top > anchor) break;
+        t = (y - 1) + Math.min(1, (anchor - r.top) / r.height);
+      }
+      draw(t);
+    });
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  draw(Y0); onScroll();
+})();
+</script>
+</body>
+</html>
